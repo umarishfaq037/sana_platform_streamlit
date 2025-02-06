@@ -1,51 +1,40 @@
 import streamlit as st
 import requests
-import base64
-from PIL import Image
-import io
+import json
 
-# ✅ Ensure set_page_config is the first command
-st.set_page_config(page_title="Stock Insights", layout="wide")
-
-# Flask API URL (Replace with your actual EC2 IP)
-FLASK_API_URL = "http://3.88.112.156:5000/generate"
+# Define Flask API URL
+FLASK_API_URL = "http://3.88.112.156:5000/finance_chat"  # Update with the correct API URL if hosted remotely
 
 # Streamlit UI
-st.title("AI-Powered Stock Insights")
+st.title("Financial Insights Chatbot")
+st.header("Ask about global stock market trends, top performers, and more!")
 
-# User query input
-query = st.text_input("Ask R1 about stocks:", 
-                      placeholder="e.g., What are the top performing stocks in Saudi Arabia?")
+# Define the user input form
+with st.form(key='finance_form'):
+    user_message = st.text_area("Enter your financial query:")
+    model_type = st.selectbox("Choose the model:", ["deepseek", "gpt", "gemini"])
+    submit_button = st.form_submit_button(label="Submit")
 
-if st.button("Get Insights"):
-    if query:
-        with st.spinner("Fetching insights..."):
-            st.write(f"🔍 Query Sent: {query}")  # Debugging log
-
-            # Send request to Flask API
-            try:
-                response = requests.post(FLASK_API_URL, json={"prompt": query})
-                data = response.json()
-                st.write(f"✅ API Response Received: {data}")  # Debugging log
-
-                # Display text response
-                if "query" in data:
-                    st.subheader(f"Response: {data['query'].capitalize()}")
-                    st.success(f"Here are the insights for {data['query']}.")
-
-                if "response" in data:
-                    st.subheader("AI Response")
-                    st.write(data["response"])
-
-                # Display Chart
-                if "chart" in data:
-                    chart_base64 = data["chart"]
-                    image_data = base64.b64decode(chart_base64)
-                    image = Image.open(io.BytesIO(image_data))
-                    st.image(image, caption="Stock Performance Chart", use_column_width=True)
-
-            except Exception as e:
-                st.error(f"❌ Error fetching API response: {e}")
-
+# When the user submits a question
+if submit_button:
+    if not user_message:
+        st.error("Please enter a message to proceed.")
     else:
-        st.warning("⚠️ Please enter a query.")
+        try:
+            # Prepare the request payload
+            payload = {
+                "message": user_message,
+                "model_type": model_type
+            }
+            
+            # Make POST request to Flask API
+            response = requests.post(FLASK_API_URL, json=payload)
+            
+            if response.status_code == 200:
+                response_data = response.json()
+                st.subheader("Response from the Model:")
+                st.write(response_data.get("response"))
+            else:
+                st.error(f"Error from API: {response.json().get('error')}")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
