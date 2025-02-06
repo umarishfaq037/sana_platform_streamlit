@@ -4,8 +4,11 @@ import base64
 from PIL import Image
 import io
 
+# ✅ Move this line to the top before any other Streamlit commands
+st.set_page_config(page_title="Stock Insights", layout="wide")
+
 # Flask API URL
-FLASK_API_URL = "http://3.88.112.156:5000/generate"
+FLASK_API_URL = "http://3.88.112.156:5000/generate"  # Replace with your EC2 IP or domain
 
 # Streamlit UI
 st.title("AI-Powered Stock Insights")
@@ -39,7 +42,3 @@ if st.button("Get Insights"):
 
     else:
         st.warning("Please enter a query.")
-
-# Run Streamlit UI
-if __name__ == "__main__":
-    st.set_page_config(page_title="Stock Insights", layout="wide")
