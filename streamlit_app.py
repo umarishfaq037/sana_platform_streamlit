@@ -8,7 +8,7 @@ import io
 st.set_page_config(page_title="Stock Insights", layout="wide")
 
 # Flask API URL (Replace with your actual EC2 IP)
-FLASK_API_URL = "http://your-ec2-public-ip:5000/generate"
+FLASK_API_URL = "http://3.88.112.156:5000/generate"
 
 # Streamlit UI
 st.title("AI-Powered Stock Insights")
