@@ -1,41 +1,45 @@
 import streamlit as st
 import requests
-import pandas as pd
-import matplotlib.pyplot as plt
+import base64
+from PIL import Image
+import io
+
+# Flask API URL
+FLASK_API_URL = "http://3.88.112.156:5000/generate"
 
 # Streamlit UI
-st.title("Deepseek R1 Finance Model")
+st.title("AI-Powered Stock Insights")
 
-# User input
-query = st.text_input("Enter your query (e.g., 'Top performing stocks in Saudi Arabia'):")
+# User query input
+query = st.text_input("Ask R1 about stocks:", 
+                      placeholder="e.g., What are the top performing stocks in Saudi Arabia?")
 
-if st.button("Submit"):
-    # Call Lambda function via API Gateway
-    response = requests.post(
-        'https://your-api-gateway-url/query',
-        json={'query': query}
-    )
-    result = pd.read_json(response.json()['body'])
-    
-    # Display results in charts
-    if not result.empty:
-        if "compare" in query.lower():
-            # Line chart for comparison
-            st.write("Performance Comparison:")
-            plt.figure(figsize=(10, 6))
-            plt.plot(result['stock'], result['performance'], marker='o')
-            plt.xlabel('Stocks')
-            plt.ylabel('Performance (%)')
-            plt.title('Top 5 Banks vs Index')
-            st.pyplot(plt)
-        else:
-            # Bar chart for top stocks
-            st.write("Top Stocks:")
-            plt.figure(figsize=(10, 6))
-            plt.bar(result['stock'], result['performance' if 'performing' in query.lower() else 'dividend_yield'])
-            plt.xlabel('Stocks')
-            plt.ylabel('Performance (%)' if 'performing' in query.lower() else 'Dividend Yield (%)')
-            plt.title('Top Performing Stocks' if 'performing' in query.lower() else 'Top Dividend Paying Stocks')
-            st.pyplot(plt)
+if st.button("Get Insights"):
+    if query:
+        with st.spinner("Fetching insights..."):
+            # Send request to Flask API
+            response = requests.post(FLASK_API_URL, json={"prompt": query})
+            data = response.json()
+
+            # Display text response
+            if "query" in data:
+                st.subheader(f"Response: {data['query'].capitalize()}")
+                st.success(f"Here are the insights for {data['query']}.")
+
+            if "response" in data:
+                st.subheader("AI Response")
+                st.write(data["response"])
+
+            # Display Chart
+            if "chart" in data:
+                chart_base64 = data["chart"]
+                image_data = base64.b64decode(chart_base64)
+                image = Image.open(io.BytesIO(image_data))
+                st.image(image, caption="Stock Performance Chart", use_column_width=True)
+
     else:
-        st.write("No results found for your query.")
+        st.warning("Please enter a query.")
+
+# Run Streamlit UI
+if __name__ == "__main__":
+    st.set_page_config(page_title="Stock Insights", layout="wide")
