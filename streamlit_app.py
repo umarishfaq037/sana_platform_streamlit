@@ -1,6 +1,9 @@
 import streamlit as st
 import requests
 import json
+from PIL import Image
+import io
+import base64
 
 # Define Flask API URL
 FLASK_API_URL = "http://3.88.112.156:5000/finance_chat"  # Update with the correct API URL if hosted remotely
@@ -32,8 +35,17 @@ if submit_button:
             
             if response.status_code == 200:
                 response_data = response.json()
+                
+                # Display the response text
                 st.subheader("Response from the Model:")
                 st.write(response_data.get("response"))
+                
+                # Check if a chart is included in the response
+                chart_data = response_data.get("chart")
+                if chart_data:
+                    # Decode the base64 chart image and display it
+                    chart_image = Image.open(io.BytesIO(base64.b64decode(chart_data.split(',')[1])))
+                    st.image(chart_image, caption="Stock Chart")
             else:
                 st.error(f"Error from API: {response.json().get('error')}")
         except Exception as e:
