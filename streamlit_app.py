@@ -6,7 +6,7 @@ import io
 import base64
 
 # Define Flask API URL
-FLASK_API_URL = "http://3.88.112.156:5000/finance_chat"  # Update with the correct API URL if hosted remotely
+FLASK_API_URL = "http://3.215.242.69:5000/finance_chat"  # Update with the correct API URL if hosted remotely
 
 # Streamlit UI
 st.title("Financial Insights Chatbot")
